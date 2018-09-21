@@ -1,6 +1,6 @@
 # color-wander
 
-Generative artwork in node/browser based on a seeded random..
+Generative artwork in node/browser based on a seeded random.
 
 Blog post and more details:
 
