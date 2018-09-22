@@ -1248,7 +1248,9 @@ console.log(colorPalette);
 var contract_json = require('./CryptoKittiesCore.json');
 var ckabi = contract_json.abi;
 var web3js = new Web3(web3.currentProvider);
-var ckcore = new web3js.eth.Contract(ckabi, '0x06012c8cf97bead5deae237070f9587f8e7a266d');
+var ckcoreMainnet = '0x06012c8cf97bead5deae237070f9587f8e7a266d';
+var FotRinkeby = '0x326d0e2190e351d158977570dB0231B9eB6C5BaC';
+var ckcore = new web3js.eth.Contract(ckabi, FotRinkeby);
 var tokenId = getUrlParams('tokenId');
 
 
@@ -1282,8 +1284,10 @@ if (typeof tokenId === 'undefined') {
   resize();
 } else {
   ckcore.methods.getKitty(tokenId).call(function(error, result) {
-    seed = result.birthTime;
-    colorPalette = result.matronId % 2
+    if (typeof result !== 'undefined') {
+      seed = result.birthTime;
+      colorPalette = result.generation;
+    }
     reload(createConfig(seed, colorPalette));
     resize();
   })
