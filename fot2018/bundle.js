@@ -1224,6 +1224,7 @@ var context = canvas.getContext('2d');
 var loop = createLoop();
 var seedContainer = document.querySelector('.seed-container');
 var seedText = document.querySelector('.seed-text');
+var ownerText = document.querySelector('.owner-text');
 
 var isIOS = /(iPad|iPhone|iPod)/i.test(navigator.userAgent);
 
@@ -1252,7 +1253,7 @@ var ckcoreMainnet = '0x06012c8cf97bead5deae237070f9587f8e7a266d';
 var FotRinkeby = '0x326d0e2190e351d158977570dB0231B9eB6C5BaC';
 var ckcore = new web3js.eth.Contract(ckabi, FotRinkeby);
 var tokenId = getUrlParams('tokenId');
-
+var tokenOwner = '0x';
 
 if (isIOS) { // iOS bugs with full screen ...
   const fixScroll = () => {
@@ -1287,12 +1288,15 @@ function renderArt(_tokenId) {
     renderRandomArt();
   } else {
     ckcore.methods.getKitty(_tokenId).call(function(error, result) {
-      seed = _tokenId;
       if (typeof result !== 'undefined') {
         colorPalette = result.generation;
       }
-      reload(createConfig(seed, colorPalette));
-      resize();
+      ckcore.methods.ownerOf(_tokenId).call(function(error, result) {
+        seed = _tokenId;
+        tokenOwner = result;
+        reload(createConfig(seed, colorPalette));
+        resize();
+      })
     })
   }
 }
@@ -1338,6 +1342,7 @@ function reload (config) {
   document.body.style.background = opts.palette[0];
   seedContainer.style.color = getBestContrast(opts.palette[0], opts.palette.slice(1));
   seedText.textContent = opts.seedName;
+  ownerText.textContent = tokenOwner;
 
   background.onload = () => {
     var renderer = createRenderer(opts);
