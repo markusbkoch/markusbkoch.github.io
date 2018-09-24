@@ -1284,16 +1284,24 @@ var autoRefresh = getUrlParams('autoRefresh');
 
 function renderArt(_tokenId) {
   if (typeof _tokenId === 'undefined') {
-    _tokenId = Math.floor(Math.random() * 200) + 1;
-  }
-  ckcore.methods.getKitty(_tokenId).call(function(error, result) {
+    renderRandomArt();
+  } else {
+    ckcore.methods.getKitty(_tokenId).call(function(error, result) {
+      seed = _tokenId;
       if (typeof result !== 'undefined') {
-        seed = _tokenId;
         colorPalette = result.generation;
       }
       reload(createConfig(seed, colorPalette));
       resize();
     })
+  }
+}
+
+function renderRandomArt() {
+  ckcore.methods.promoCreatedCount().call(function(error, result) {
+    var _tokenId = Math.floor(Math.random() * result) + 1;
+    renderArt(_tokenId);
+  })
 }
 
 if (typeof autoRefresh !== 'undefined') {
