@@ -1279,19 +1279,28 @@ canvas.style.position = 'absolute';
 // randomize();
 // resize();
 
-if (typeof tokenId === 'undefined') {
-  reload(createConfig(seed, colorPalette));
-  resize();
-} else {
-  ckcore.methods.getKitty(tokenId).call(function(error, result) {
-    if (typeof result !== 'undefined') {
-      seed = result.birthTime;
-      colorPalette = result.generation;
-    }
-    reload(createConfig(seed, colorPalette));
-    resize();
-  })
+var autoRefresh = getUrlParams('autoRefresh');
+
+
+function renderArt(_tokenId) {
+  if (typeof _tokenId === 'undefined') {
+    _tokenId = Math.floor(Math.random() * 200) + 1;
+  }
+  ckcore.methods.getKitty(_tokenId).call(function(error, result) {
+      if (typeof result !== 'undefined') {
+        seed = _tokenId;
+        colorPalette = result.generation;
+      }
+      reload(createConfig(seed, colorPalette));
+      resize();
+    })
 }
+
+if (typeof autoRefresh !== 'undefined') {
+  setTimeout(function(){window.location.reload(1);}, autoRefresh * 1000);
+}
+renderArt(tokenId);
+
 
 const addEvents = (element) => {
   element.addEventListener('mousedown', (ev) => {
