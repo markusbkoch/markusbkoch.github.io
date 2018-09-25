@@ -774,6 +774,17 @@ console.log(colorPalette);
 
 var contract_json = require('./ArtCore.json');
 var fotabi = contract_json.abi;
+
+window.addEventListener('load', function() {
+  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  if (typeof web3 === 'undefined') {
+  //   // Use the browser's ethereum provider
+  //   var provider = web3.currentProvider
+  // } else {
+    alert('This is the front end to a web3 application. Consider installing MetaMask!')
+  }
+})
+
 var web3js = new Web3(web3.currentProvider);
 // var FotRinkeby = '0xfFBC9c9662c907D61a81a07Bc49c87bc37B979cf';
 var FotMain = '0xfE9B5e8F7E8f6493F7D8532D915c9d53dFfe9080';
