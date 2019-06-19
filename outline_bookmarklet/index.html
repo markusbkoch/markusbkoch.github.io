@@ -11,13 +11,13 @@
 <body>
   <ol>
     <li>Drag this link to your browser's bookmark bar:
-      <a href="javascript:function my_bookmarklet() {console.log(encodeURIComponent(window.location));fetch("https://outlineapi.com/v3/parse_article?source_url=" +encodeURIComponent(window.location)).then(res => res.json()).then(body => {if (body.error) {return alert(`Outline Bookmarklet Error: ${body.error}`);}window.location.href = `https://outline.com/${body.data.short_code}`}).catch(err => {alert("Outline Bookmarklet Error. See console for details.");console.error(err);});}my_bookmarklet();">Outline This</a>
+      <a href="javascript:function my_bookmarklet() {console.log(encodeURIComponent(window.location));fetch('https://outlineapi.com/v3/parse_article?source_url=' +encodeURIComponent(window.location)).then(res => res.json()).then(body => {if (body.error) {return alert(`Outline Bookmarklet Error: ${body.error}`);}window.location.href = `https://outline.com/${body.data.short_code}`}).catch(err => {alert('Outline Bookmarklet Error. See console for details.'');console.error(err);});}my_bookmarklet();">Outline This</a>
     </li>
     <li>
       Open an article in your browser and click the bookmarklet. After a while you should be redirected to the Outline version of the article.
     </li>
   </ol>
-      
+
   <br/>Based on
   <a href="https://gist.github.com/giodamelio/c97f71a12eec5c142f21f757a6ba4d8a">this</a>
 </body>
