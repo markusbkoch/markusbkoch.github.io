@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Math Scavenger Hunt</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #eef;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    #hud {
+      width: 100%;
+      padding: 1em;
+      display: flex;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: #fff;
+      position: sticky;
+      top: 0;
+    }
+    
+    #lives {
+      font-size: 1.5em;
+    }
+    
+    #door-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1em;
+      padding: 2em;
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    .door {
+      background: #cfc;
+      border: 2px solid #393;
+      border-radius: 8px;
+      padding: 1em;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    
+    .door.locked { background: #eee; cursor: default; color: #999; }
+    .door:hover:not(.locked) { background: #dfd; }
+    
+    #question {
+      white-space: pre-line;
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 1.2em;
+    }
+    
+    #answer-input {
+      margin-bottom: 1em;
+      padding: 0.5em;
+      font-size: 1.1em;
+      width: 100%;
+      max-width: 200px;
+      text-align: center;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    #submit-answer {
+      margin-top: 0.5em;
+      padding: 0.5em 1em;
+      font-size: 1.1em;
+      background: #393;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 200px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    #submit-answer:hover {
+      background: #4a4;
+    }
+    
+    #submit-answer:active {
+      background: #282;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div id="level">Level: 1</div>
+    <div id="lives"></div>
+  </div>
+
+  <div id="door-container"></div>
+
+  <script>
+    // GAME STATE
+    let level = 1;
+    let lives = 3;
+    const totalLevels = 11;
+    let questions = [];
+    let currentQuestionIndex = 0;
+
+    // LEVEL CONFIGURATION
+    const levels = [
+      null,
+      { op: '+', max: 10 },
+      { op: '+', max: 20 },
+      { op: '+', max: 50 },
+      { op: '+', max: 100 },
+      { op: '-', max: 10 },
+      { op: '-', max: 20 },
+      { op: '-', max: 50 },
+      { op: '-', max: 100 },
+      { op: '*', tables: [2,3,4] },
+      { op: '*', tables: [2,3,4,5,6,7,8,9,10] },
+      { op: '/', tables: [2,3,4,5,6,7,8,9,10] },
+    ];
+
+    // UTILS
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion(lvlConfig) {
+      let a, b;
+      if (lvlConfig.op === '+' || lvlConfig.op === '-') {
+        a = randInt(0, lvlConfig.max);
+        b = randInt(0, lvlConfig.max);
+        if (lvlConfig.op === '-' && a < b) [a, b] = [b, a];
+      } else if (lvlConfig.op === '*') {
+        const t = lvlConfig.tables;
+        const table = t[randInt(0, t.length - 1)];
+        a = table;
+        b = randInt(1, 10);
+      } else if (lvlConfig.op === '/') {
+        const t = lvlConfig.tables;
+        const table = t[randInt(0, t.length - 1)];
+        b = table;
+        const mult = randInt(1, 10);
+        a = table * mult;
+      }
+      const expr = `${a} ${lvlConfig.op} ${b}`;
+      const answer = eval(expr);
+      return { question: expr, answer };
+    }
+
+    // RENDERERS & GAME LOGIC
+    const doorContainer = document.getElementById('door-container');
+    const levelDisplay = document.getElementById('level');
+    const livesDisplay = document.getElementById('lives');
+
+    function updateHUD() {
+      levelDisplay.textContent = `Level: ${level}`;
+      livesDisplay.innerHTML = '❤️'.repeat(lives);
+    }
+
+    function startLevel() {
+      questions = [];
+      currentQuestionIndex = 0;
+      const cfg = levels[level];
+      for (let i = 0; i < 5; i++) {
+        questions.push(generateQuestion(cfg));
+      }
+      updateHUD();
+      showQuestion();
+    }
+
+    function showQuestion() {
+      doorContainer.innerHTML = '';
+      const { question, answer } = questions[currentQuestionIndex];
+
+      // Create door wrapper
+      const door = document.createElement('div');
+      door.className = 'door';
+
+      // Question Text
+      const qDiv = document.createElement('div');
+      qDiv.id = 'question';
+      const displayQuestion = question.replace('*', '×').replace('/', '÷');
+      qDiv.textContent = `🚪🔒\n\n${displayQuestion}`;
+      door.appendChild(qDiv);
+
+      // Input Field
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.id = 'answer-input';
+      input.autofocus = true;
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          handleAnswer(answer, door);
+        }
+      });
+      door.appendChild(input);
+
+      // Submit Button
+      const submit = document.createElement('button');
+      submit.textContent = 'Submit';
+      submit.id = 'submit-answer';
+      submit.onclick = () => handleAnswer(answer, door);
+      door.appendChild(submit);
+
+      doorContainer.appendChild(door);
+    }
+
+    function handleAnswer(correctAnswer, door) {
+      const input = door.querySelector('#answer-input');
+      const userVal = parseInt(input.value, 10);
+
+      // Lock the door
+      door.classList.add('locked');
+      door.innerHTML = ''; // Clear inner content
+
+      if (userVal === correctAnswer) {
+        door.textContent = '🚪🔓';
+      } else {
+        door.textContent = '🚪❌';
+        lives--;
+        updateHUD();
+        if (lives <= 0) {
+          setTimeout(() => alert('Game Over!'), 10);
+          level = 1;
+          lives = 3;
+          startLevel();
+          return;
+        }
+      }
+
+      // Next question or level
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          showQuestion();
+        } else {
+          lives++;
+          if (level < totalLevels) {
+            level++;
+            alert(`Great! Onto level ${level}. You gained a life!`);
+            startLevel();
+          } else {
+            alert('🎉 You mastered all levels! 🎉');
+          }
+        }
+      }, 700);
+    }
+
+    window.onload = startLevel;
+  </script>
+</body>
+</html> 
